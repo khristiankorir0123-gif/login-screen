@@ -79,3 +79,13 @@
     </script>
 </body>
 </html>
+<button onclick="clearProfiles()" style="margin-top: 20px; background: #ff3b30;">Delete All Profiles</button>
+
+<script>
+function clearProfiles() {
+    if(confirm("Delete all profiles and start over?")) {
+        localStorage.removeItem('k_profiles'); // Deletes the list of users
+        location.reload(); // Refreshes the page to show the "+" button again
+    }
+}
+</script>
