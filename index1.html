@@ -1,0 +1,24 @@
+<div class="login-container">
+    <h1>K-OS Home Launcher</h1>
+    <div id="profile-creator">
+        <input type="text" id="username" placeholder="Profile Name">
+        <input type="file" id="imageInput" accept="image/*">
+        <button onclick="createProfile()">Create & Enter</button>
+    </div>
+</div>
+
+<script>
+function createProfile() {
+    const name = document.getElementById('username').value;
+    const file = document.getElementById('imageInput').files[0];
+    const reader = new FileReader();
+
+    reader.onloadend = function() {
+        localStorage.setItem('hub_name', name);
+        localStorage.setItem('hub_pic', reader.result); // Saves image as text string
+        window.location.href = "hub.html";
+    }
+    if(file) { reader.readAsDataURL(file); } 
+    else { alert("Please pick a photo!"); }
+}
+</script>
