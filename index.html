@@ -1,24 +1,81 @@
-<div class="login-container">
-    <h1>K-OS Home Launcher</h1>
-    <div id="profile-creator">
-        <input type="text" id="username" placeholder="Profile Name">
-        <input type="file" id="imageInput" accept="image/*">
-        <button onclick="createProfile()">Create & Enter</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-OS | Login</title>
+    <style>
+        :root { --accent: #007aff; --glass: rgba(255, 255, 255, 0.08); }
+        body { 
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+            color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;
+        }
+        .login-card {
+            background: var(--glass); backdrop-filter: blur(20px);
+            padding: 50px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; width: 350px; transition: 0.4s ease;
+        }
+        .login-card:hover { border-color: var(--accent); transform: translateY(-5px); }
+        h1 { font-size: 1.8rem; margin-bottom: 30px; letter-spacing: -0.5px; }
+        
+        input {
+            width: 100%; padding: 15px; margin-bottom: 20px; border-radius: 12px;
+            border: 1px solid #333; background: rgba(0,0,0,0.3); color: white; outline: none;
+        }
+        input:focus { border-color: var(--accent); }
+        
+        .upload-btn {
+            display: block; width: 100%; padding: 12px; margin-bottom: 20px;
+            background: #333; border-radius: 12px; cursor: pointer; font-size: 0.9rem;
+        }
+        
+        .enter-btn {
+            width: 100%; padding: 15px; border-radius: 12px; border: none;
+            background: var(--accent); color: white; font-weight: bold; cursor: pointer;
+            transition: 0.2s;
+        }
+        .enter-btn:hover { background: #0056b3; transform: scale(1.02); }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <h1>Who is watching?</h1>
+        <input type="text" id="userName" placeholder="Your Name">
+        
+        <label class="upload-btn">
+            Pick Profile Photo
+            <input type="file" id="userPic" accept="image/*" style="display:none;">
+        </label>
+
+        <button class="enter-btn" onclick="startSession()">ENTER</button>
     </div>
-</div>
 
-<script>
-function createProfile() {
-    const name = document.getElementById('username').value;
-    const file = document.getElementById('imageInput').files[0];
-    const reader = new FileReader();
+    <script>
+        function startSession() {
+            const name = document.getElementById('userName').value;
+            const file = document.getElementById('userPic').files[0];
+            
+            if (!name) { alert("Please enter a name"); return; }
 
-    reader.onloadend = function() {
-        localStorage.setItem('hub_name', name);
-        localStorage.setItem('hub_pic', reader.result); // Saves image as text string
-        window.location.href = "hub.html";
-    }
-    if(file) { reader.readAsDataURL(file); } 
-    else { alert("Please pick a photo!"); }
-}
-</script>
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                // Save to LocalStorage so the Hub can read it
+                localStorage.setItem('khristian_user', name);
+                if(file) localStorage.setItem('khristian_pic', reader.result);
+                
+                // FIXED REDIRECT
+                window.location.href = "https://khristiankorir0123-gif.github.io/hub/";
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                localStorage.setItem('khristian_user', name);
+                window.location.href = "https://khristiankorir0123-gif.github.io/hub/";
+            }
+        }
+    </script>
+</body>
+</html>
