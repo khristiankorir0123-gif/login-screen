@@ -3,121 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>K-OS | Login</title>
+    <title>K-OS | Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
-        :root { --accent: #007aff; --glass: rgba(255, 255, 255, 0.08); }
+        :root { --accent: #007aff; --glass: rgba(255, 255, 255, 0.05); }
+        
         body { 
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-            color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; margin: 0;
-        }
-        
-        .profile-container { display: flex; gap: 30px; align-items: center; justify-content: center; margin-bottom: 50px; }
-        
-        .profile-box { text-align: center; cursor: pointer; transition: 0.3s; width: 120px; }
-        .profile-box:hover { transform: scale(1.1); }
-        .profile-box:focus { outline: none; }
-        .profile-box:focus .avatar-circle { border-color: var(--accent); box-shadow: 0 0 15px var(--accent); }
-
-        .avatar-circle { 
-            width: 100px; height: 100px; border-radius: 50%; border: 2px solid #333;
-            background-size: cover; background-position: center; margin-bottom: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+            background: #000; 
+            color: white; 
+            font-family: -apple-system, sans-serif; 
+            margin: 0; 
+            min-height: 100vh; /* Changed from height: 100vh to allow scrolling */
+            overflow-x: hidden;
+            overflow-y: auto; /* Ensures you can swipe down on mobile */
         }
 
-        .login-card {
-            background: var(--glass); backdrop-filter: blur(20px);
-            padding: 40px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; width: 320px; display: none;
+        /* Desktop Layout (Standard Grid) */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr; 
+            grid-template-rows: 180px 500px; /* Fixed height for desktop look */
+            gap: 20px;
+            padding: 30px;
+            box-sizing: border-box;
+            max-width: 1600px;
+            margin: 0 auto;
         }
-        
-        h1 { font-size: 2rem; margin-bottom: 40px; font-weight: 300; }
-        input {
-            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px;
-            border: 1px solid #333; background: rgba(0,0,0,0.3); color: white; box-sizing: border-box;
+
+        /* --- MOBILE RESPONSIVENESS --- */
+        @media (max-width: 850px) {
+            .bento-grid {
+                grid-template-columns: 1fr; /* Stack everything in one column */
+                grid-template-rows: auto;    /* Let tiles dictate their own height */
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .tile {
+                min-height: 200px; /* Prevents tiles from being too flat */
+            }
+
+            #clock { font-size: 2.2rem; } /* Shrink text slightly for small screens */
+            
+            .calendar, .news-tile {
+                height: 450px; /* Give widgets enough room to be useful */
+            }
         }
+
+        .tile { 
+            background: #111; 
+            border-radius: 28px; 
+            border: 1px solid #222; 
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        /* Apple Wiggle */
+        @keyframes wiggle {
+            0% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+            100% { transform: rotate(-1deg); }
+        }
+
+        .editing .tile { animation: wiggle 0.3s infinite; cursor: grab; }
+        .editing iframe, .editing rssapp-carousel { pointer-events: none; }
+
+        /* Profile/Clock Styles */
+        .profile-section { padding: 25px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        #clock { font-size: 2.8rem; font-weight: 700; line-height: 1; }
+        #live-date { color: #888; font-size: 1rem; }
         
-        .btn { width: 100%; padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-danger { background: #ff3b30; color: white; margin-top: 30px; width: auto; padding: 10px 20px; }
+        .apps-section { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: none !important; background: transparent !important; }
+        
+        .app-btn {
+            background: #111; border: 1px solid #222; border-radius: 24px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-decoration: none; color: white; transition: 0.3s; min-height: 80px;
+        }
+
+        .widget-header { padding: 20px; color: var(--accent); font-weight: bold; font-size: 0.8rem; text-transform: uppercase; }
+        .content-fill { flex: 1; width: 100%; overflow: hidden; }
+        .cal-frame { filter: invert(0.9) hue-rotate(180deg) brightness(0.8); width: 100%; height: 100%; border: none; }
+        
+        .switch-btn, .edit-toggle-btn { 
+            background: rgba(255,255,255,0.1); border: none; color: white; 
+            padding: 8px 16px; border-radius: 12px; cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <h1 id="main-title">who is watching?</h1>
-
-    <div class="profile-container" id="profileList"></div>
-
-    <div class="login-card" id="regCard">
-        <input type="text" id="userName" placeholder="Name">
-        <input type="file" id="userPic" accept="image/*" style="margin-bottom: 15px;">
-        <button class="btn btn-primary" onclick="createNewProfile()">SAVE & ENTER</button>
-        <button class="btn" style="background:#444; color:white;" onclick="toggleReg(false)">CANCEL</button>
+<div class="bento-grid" id="main-grid">
+    <!-- Section 1 -->
+    <div class="tile profile-section">
+        <div style="display: flex; align-items: center;">
+            <img id="user-img" src="" style="width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); margin-right: 15px; object-fit: cover;">
+            <div>
+                <div id="clock">00:00</div>
+                <div id="live-date">...</div>
+            </div>
+        </div>
+        <button class="switch-btn" onclick="location.href='https://khristiankorir0123-gif.github.io/login-screen/'">Switch</button>
     </div>
 
-    <button class="btn-danger" onclick="clearAll()">Delete All Profiles</button>
+    <!-- Section 2 -->
+    <div class="tile apps-section">
+        <a href="https://onedrive.live.com" class="app-btn">OneDrive</a>
+        <a href="https://vidbox.de" class="app-btn">Vidbox</a>
+    </div>
 
-    <script>
-        // Standardized Hub Path
-        const HUB_PATH = "https://khristiankorir0123-gif.github.io/hub/";
+    <!-- Section 3 -->
+    <div class="tile" style="justify-content: center; align-items: center;">
+        <button class="edit-toggle-btn" onclick="toggleEditMode()">⚙️ Edit Hub</button>
+    </div>
 
-        function renderProfiles() {
-            const list = document.getElementById('profileList');
-            const users = JSON.parse(localStorage.getItem('k_profiles')) || [];
-            list.innerHTML = '';
+    <!-- Section 4 -->
+    <div class="tile">
+        <div class="widget-header">Live Scores</div>
+        <div class="content-fill" id="match-list">
+            <div style="padding: 20px; color: #444;">No live matches.</div>
+        </div>
+    </div>
 
-            users.forEach(user => {
-                const div = document.createElement('div');
-                div.className = 'profile-box';
-                div.tabIndex = 0;
-                div.innerHTML = `
-                    <div class="avatar-circle" style="background-image: url('${user.pic}')"></div>
-                    <div>${user.name}</div>
-                `;
-                div.onclick = () => selectUser(user);
-                list.appendChild(div);
-            });
+    <!-- Section 5 (Calendar) -->
+    <div class="tile calendar">
+        <iframe src="https://calendar.google.com/calendar/embed?src=en.dutch%23holiday%40group.v.calendar.google.com&ctz=Europe%2FAmsterdam" class="cal-frame"></iframe>
+    </div>
 
-            const addBtn = document.createElement('div');
-            addBtn.className = 'profile-box';
-            addBtn.innerHTML = `<div class="avatar-circle" style="border-style: dashed;">+</div><div>Add</div>`;
-            addBtn.onclick = () => toggleReg(true);
-            list.appendChild(addBtn);
+    <!-- Section 6 (News) -->
+    <div class="tile news-tile">
+        <div class="widget-header">Headlines</div>
+        <div class="content-fill">
+            <rssapp-carousel id="tgVNLlUheA584JKg"></rssapp-carousel>
+            <script src="https://widget.rss.app/v1/carousel.js" type="text/javascript" async></script>
+        </div>
+    </div>
+</div>
+
+<script>
+    let isEditing = false;
+    let sortable;
+
+    function toggleEditMode() {
+        const grid = document.getElementById('main-grid');
+        const btn = document.querySelector('.edit-toggle-btn');
+        isEditing = !isEditing;
+
+        if (isEditing) {
+            grid.classList.add('editing');
+            btn.innerText = "Done";
+            sortable = Sortable.create(grid, { animation: 250 });
+        } else {
+            grid.classList.remove('editing');
+            btn.innerText = "⚙️ Edit Hub";
+            if(sortable) sortable.destroy();
         }
+    }
 
-        function toggleReg(show) {
-            document.getElementById('regCard').style.display = show ? 'block' : 'none';
-            document.getElementById('profileList').style.display = show ? 'none' : 'flex';
-            document.getElementById('main-title').innerText = show ? 'create profile' : 'who is watching?';
-        }
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('live-date').textContent = now.toLocaleDateString('en-NL', { weekday: 'short', day: 'numeric', month: 'short' });
+    }
 
-        function createNewProfile() {
-            const name = document.getElementById('userName').value;
-            const file = document.getElementById('userPic').files[0];
-            if (!name || !file) return alert("Enter name and photo");
-
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                const newUser = { name, pic: reader.result };
-                let users = JSON.parse(localStorage.getItem('k_profiles')) || [];
-                users.push(newUser);
-                localStorage.setItem('k_profiles', JSON.stringify(users));
-                selectUser(newUser);
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function selectUser(user) {
-            localStorage.setItem('active_user', user.name);
-            localStorage.setItem('active_pic', user.pic);
-            window.location.href = HUB_PATH;
-        }
-
-        function clearAll() {
-            if(confirm("Delete all?")) { localStorage.removeItem('k_profiles'); location.reload(); }
-        }
-
-        window.onload = renderProfiles;
-    </script>
+    window.onload = () => {
+        document.getElementById('user-img').src = localStorage.getItem('active_pic') || '';
+        updateClock();
+        setInterval(updateClock, 1000);
+    };
+</script>
 </body>
 </html>
