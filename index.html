@@ -28,7 +28,7 @@
         .login-card {
             background: var(--glass); backdrop-filter: blur(20px);
             padding: 40px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; width: 320px; display: none; /* Hidden unless adding new */
+            text-align: center; width: 320px; display: none;
         }
         
         h1 { font-size: 2rem; margin-bottom: 40px; font-weight: 300; }
@@ -46,10 +46,8 @@
 
     <h1 id="main-title">who is watching?</h1>
 
-    <!-- Selection Area (image_8f3c99.png style) -->
     <div class="profile-container" id="profileList"></div>
 
-    <!-- Registration Card -->
     <div class="login-card" id="regCard">
         <input type="text" id="userName" placeholder="Name">
         <input type="file" id="userPic" accept="image/*" style="margin-bottom: 15px;">
@@ -60,7 +58,8 @@
     <button class="btn-danger" onclick="clearAll()">Delete All Profiles</button>
 
     <script>
-        const HUB_PATH = "https://khristiankorir0123-gif.github.io/hub/Hub.html";
+        // Standardized Hub Path
+        const HUB_PATH = "https://khristiankorir0123-gif.github.io/hub/";
 
         function renderProfiles() {
             const list = document.getElementById('profileList');
@@ -79,7 +78,6 @@
                 list.appendChild(div);
             });
 
-            // The "+" Button
             const addBtn = document.createElement('div');
             addBtn.className = 'profile-box';
             addBtn.innerHTML = `<div class="avatar-circle" style="border-style: dashed;">+</div><div>Add</div>`;
